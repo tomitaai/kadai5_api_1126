@@ -23,23 +23,32 @@
     <div id='map'></div>
 
     <div id="menu">
-        <input id="mapbox/satellite-streets-v12" type="radio" name="rtoggle" value="satellite" checked="checked">
-        <label for="mapbox/satellite-streets-v12">satellite streets!</label>
+        <input id="tomita103/clb5xpng3000d14t4fd2uooph" type="radio" name="rtoggle" value="neduko" checked="checked">
+        <label for="tomita103/clb5xpng3000d14t4fd2uooph">ねづこ</label>
+        <input id="tomita103/clb0tycdo007814p9lkk5runb" type="radio" name="rtoggle" value="whaam">
+        <label for="tomita103/clb0tycdo007814p9lkk5runb">whaam</label>
+        <input id="mapbox/satellite-streets-v12" type="radio" name="rtoggle" value="satellite">
+        <label for="mapbox/satellite-streets-v12">satellite streets</label>
         <input id="mapbox/light-v11" type="radio" name="rtoggle" value="light">
-        <label for="mapbox/light-v11">light!</label>
+        <label for="mapbox/light-v11">light</label>
         <input id="mapbox/dark-v11" type="radio" name="rtoggle" value="dark">
-        <label for="mapbox/dark-v11">dark!</label>
+        <label for="mapbox/dark-v11">dark</label>
         <input id="mapbox/streets-v12" type="radio" name="rtoggle" value="streets">
-        <label for="mapbox/streets-v12">streets!</label>
+        <label for="mapbox/streets-v12">streets</label>
         <input id="mapbox/outdoors-v12" type="radio" name="rtoggle" value="outdoors">
-        <label for="mapbox/outdoors-v12">outdoors!</label>
+        <label for="mapbox/outdoors-v12">outdoors</label>
     </div>
 
     <div class="insert">
-        <label for="name">name</label>
-        <input id="name" type="text" placeholder="地名">
-        <label for="address">address</label>
-        <input id="address" type="text" placeholder="住所">
+        <p>写真を投稿したい場所をクリックしてね</p>
+        <div class="form">
+            <input id="pop" type="text" placeholder="コメント">
+            <input id="longitude" type="text" placeholder="緯度">
+            <input id="latitude" type="text" placeholder="経度">
+            <input type="file" id="image" class="file" accept="image/*">
+            <div id="uploadimage" class="uploadimagearea"></div>
+            <textarea id="base64" class="base64area" rows="6"></textarea>
+        </div>
 
         <button id="insBtn">写真投稿に全集中</button>
     </div>
@@ -98,7 +107,7 @@
         function mapView(lng, lat) {
             const map = new mapboxgl.Map({
                 container: 'map',
-                style: 'mapbox://styles/tomita103/clb2dcsc3001p15mq2tssfw3t', // 日本語スタイル
+                style: 'mapbox://styles/tomita103/clb5xpng3000d14t4fd2uooph', // 日本語スタイル
                 center: [lng, lat],
                 zoom: 6
             });
@@ -118,60 +127,72 @@
                 })
             );
 
+            // ＝＝＝＝コントロール関係表示＝＝＝＝
+            
+            map.addControl(new mapboxgl.NavigationControl());
+
 
             // ＝＝＝＝聖地を地図上に表示＝＝＝＝
             // 公式サイトのコード
             // https://firebase.google.com/docs/firestore/query-data/get-data#web
-            // の「コレクションから複数のドキュメントを取得する」を参照したうえで追記してるもの
+            // の「コレクションから複数のドキュメントを取得する」を参照したうえで変更
 
             async function monumentView(){
             const querySnapshot = await getDocs(collection(db, "monument"));
             querySnapshot.forEach((doc) => {
                 console.log(doc.id, " => ", doc.data());
-                console.log(doc.data().name);
-                console.log(doc.data().address);
-            });
-            }
-            monumentView();
-            // 公式サイトのコード終了
-
-
-            // １つの地点だけ表示させるコード
-            // （これを元にfirebaseから引っ張った複数地点を入れ込みたいです）
-
-            const monument = [139.7670516, 35.6811673];
-            const popup = new mapboxgl.Popup({ offset: 25 }).setText(
-                'Construction on the Washington Monument began in 1848.'
-            );
+                console.log(doc.data().longitude, doc.data().latitude);
+                const monument = [doc.data().longitude, doc.data().latitude];
+                const popup = new mapboxgl.Popup({ offset: 25 }).setText(
+                doc.data().pop
+                );
+                const base64 = doc.data().base64;
 
             const el = document.createElement('div');
             el.id = 'marker';
+            el.style.backgroundImage = "url(" + base64 + ")";
 
-            // create the marker
             new mapboxgl.Marker(el)
                 .setLngLat(monument)
                 .setPopup(popup)
                 .addTo(map);
 
+            });
+        }
+
+            monumentView();
+
+
+
 
 
             // ＝＝＝＝投稿＝＝＝＝
-            let name = document.getElementById("name");
-            let address = document.getElementById("address");
+            let pop = document.getElementById("pop");
+            let latitude = document.getElementById("latitude");
+            let longitude = document.getElementById("longitude");
+            let base64 = document.getElementById("base64");
 
             async function AddDocument_CustomID() {
                 let ref = collection(db, "monument");
+                
                 const docRef = await addDoc(
                     ref, {
-                    name: name.value,
-                    address: address.value
+                    pop: pop.value,
+                    longitude: longitude.value,
+                    latitude: latitude.value,
+                    base64: base64.value,
                 }
                 )
                     .then(() => {
-                        alert("心を燃やせ！写真は燃やすなキケン！");
+                        alert("投稿完了！写真は燃やすな心を燃やせ！！");
                         function clearText() {
-                            name.value = '';
-                            address.value = '';
+                            pop.value = '';
+                            latitude.value = '';
+                            longitude.value = '';
+
+                            base64.value = '';
+                            uploadimage.innerHTML='';
+                            image.value=''
                         }
                         clearText();
                     })
@@ -180,20 +201,43 @@
                     })
             }
 
-            // ボタンクリックイベント
-
             insBtn.addEventListener("click", AddDocument_CustomID);
 
 
 
+            // ＝＝＝＝クリック位置の経緯度取得＝＝＝＝
+
+            map.on('click', function(e) {
+                const lat = e.lngLat.lat;
+                const lng = e.lngLat.lng;
+                //経緯度表示
+                alert("写真投稿の場所はここでOK？");
+                document.getElementById( "latitude" ).value = lat;
+                document.getElementById( "longitude" ).value = lng;
+            });
 
 
 
 
 
-            // ＝＝＝＝画像を投稿＝＝＝＝
+            // ＝＝＝＝画像を選択＝＝＝＝
 
+            $("#image").on('change', function () {
+                const image = document.querySelector('#image')
+                const file = image.files[0]
 
+                const reader = new FileReader()
+                reader.onload = function (e) {
+                const base64 = reader.result
+
+                document.querySelector('#uploadimage').innerHTML = `
+                <img class="upimg" src="${base64}">
+                `    
+                document.querySelector('#base64').value = base64
+                $('.base64area').css("display", "block");
+                }
+                reader.readAsDataURL(file)
+            });
 
 
 
@@ -211,28 +255,10 @@
             // ＝＝＝＝＝＝＝＝＝＝＝＝
 
 
-
-            // class customMarker extends mapboxgl.Marker{
-            //     _onMapClick(e) {
-            //         const targetElement = e.originalEvent.target;
-            //         const element = this._element;
-
-            //         if (targetElement === element || element.contains((targetElement))) {
-            //             clickEvent();
-            //         }
-            //     }
-            // }
-
-            // const marker = new customMarker({
-            // 	color: '#ff0000'
-            // 	})
-            // 	.setLngLat(marker_loc)
-            // 	.addTo(gmap);
-
-
-
         }
+
     </script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 
 </body>

@@ -36,7 +36,33 @@ max-width: 200px;
     background: #333232;
     width: 100%;
     bottom: 0;
-    padding: 15px;
+    padding: 10px 15px 35px 15px;
     font-family: 'Open Sans', sans-serif;
     color: white;
+}
+
+.upimg{
+    width: 15px;
+    height: 15px;
+}
+
+.base64area{
+    width: 5px;
+    height: 5px;
+    visibility:hidden;
+}
+
+.form{
+    display: inline-block;
+}
+
+
+#insBtn{
+    background: #f7b977;
+    color: #333;
+    display: inline-block;
+    padding:10px 30px 10px 30px;
+    margin: 10px;
+    text-align: center;
+    border-radius: 25px;
 }
